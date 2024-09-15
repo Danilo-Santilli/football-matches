@@ -1,58 +1,78 @@
 import apiFootball from "../../Services/api";
-import './home.css';
-import { useEffect, useState} from 'react';
+import "./home.css";
+import { useEffect, useState } from "react";
 
-export default function Home(){
-
+export default function Home() {
   const [matches, setMatches] = useState([]);
 
-  useEffect(()=>{
-    async function getUpcomingMatches(){
-      try{
-        const response = await apiFootball.get('fixtures', {
-          params: {
-            live: 'all'
-          }
-        })
+  const getUpcomingMatches = async () => {
+    try {
+      const response = await apiFootball.get("fixtures", {
+        params: {
+          live: "39-140-135-78-61-71-2-13",
+        },
+      });
 
-        setMatches(response.data.response)
-        console.log(response.data.response)
-      } catch(error){
-        console.error('Não foi possível buscar a partida', error);
-      }
+      setMatches(response.data.response);
+      console.log(response.data.response);
+    } catch (error) {
+      console.error("Não foi possível buscar a partida", error);
     }
-  
+  };
+
+  useEffect(() => {
     getUpcomingMatches();
-  }, [])
 
+    const intervalId = setInterval(() => {
+      getUpcomingMatches();
+    }, 60000);
 
-  return(
+    return () => clearInterval(intervalId);
+  }, []);
+
+  return (
     <div className="container">
       <div className="matches-list">
-        {matches.map((match)=>{
-          return(
+        {matches.map((match) => {
+          return (
             <div key={match.fixture.id} className="match">
-              <h2 className="league">
-                {match.league.name}
-              </h2>
-              <h4 className="country">
-                {match.league.country}
-              </h4>
-              <div className="teams">
-                <h4 className="home">
-                  {match.teams.home.name}
-                  {match.goals.home}
-                </h4>
-                <h4 className="away">
-                  {match.teams.away.name}
-                  {match.goals.away}
-                </h4>
+
+              <div className="league">
+                <h2 className="league-name">{match.league.name}</h2>
+
+                <img
+                  src={match.league.flag}
+                  alt="flag"
+                  className="league-flag"
+                />
               </div>
-              
+
+              <div className="status">
+                <p>{match.fixture.status.long}</p>
+                <p>{match.fixture.status.elapsed}</p>
+              </div>
+
+              <div className="teams">
+                <div className="team-home">
+                  <img src={match.teams.home.logo} alt="logo" />
+                  <h4 className="name">{match.teams.home.name}</h4>
+                </div>
+
+                <div className="team-away">
+                  <img src={match.teams.away.logo} alt="logo" />
+                  <h4 className="name">{match.teams.away.name}</h4>
+                </div>
+              </div>
+
+              <div className="goals">
+                <h1 className="goals-home">{match.goals.home}</h1>
+
+                <h1 className="goals-away">{match.goals.away}</h1>
+              </div>
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
